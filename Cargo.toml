@@ -8,4 +8,5 @@ edition = "2021"
 [dependencies]
 image = "0.24.7"
 imageproc = "0.23.0"
+photon-rs = "0.3.2"
 rusttype = "0.9.3"

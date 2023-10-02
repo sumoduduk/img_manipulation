@@ -1,30 +1,34 @@
-use image::{GenericImageView, Rgba};
-use imageproc::drawing;
-use rusttype::{Font, Scale};
+mod file_operation;
+mod imgproc;
+mod overlay;
+mod scale_image;
+mod watermark;
+
+use std::env;
+
+use file_operation::read_folder;
+use image::{imageops, GenericImageView};
+
+use scale_image::begin_scale;
 
 fn main() {
-    let mut img = image::open("example.png").expect("no image found");
-    let (width, height) = img.dimensions();
+    let mut args = env::args();
 
-    let color = Rgba([255, 255, 255, 220]);
+    let folder_path = args.nth(1).expect("no folder path found");
+    println!("folde path : {}", &folder_path);
+    read_folder(&folder_path);
 
-    let scale = Scale {
-        x: (width / 8) as f32,
-        y: (height / 8) as f32,
-    };
-
-    let font = Vec::from(include_bytes!("../CroissantOne.ttf") as &[u8]);
-    let font = Font::try_from_vec(font).unwrap();
-
-    drawing::draw_text_mut(
-        &mut img,
-        color,
-        (width / 4).try_into().unwrap(),
-        (height / 2).try_into().unwrap(),
-        scale,
-        &font,
-        "Hello World",
-    );
-
-    img.save("img_ouput.png").unwrap()
+    // let mut image_main = image::open(&img_path).expect("error open image");
+    //
+    // let (width, height) = image_main.dimensions();
+    //
+    // let watermark_path = "watermark.png";
+    //
+    // let watermark_vec = begin_scale(watermark_path, width, height);
+    //
+    // let _ = imageops::overlay(&mut image_main, &watermark_vec, 0, 0);
+    //
+    // let _ = image_main.save("bride_output.png");
+    //
+    // println!("DONE");
 }
