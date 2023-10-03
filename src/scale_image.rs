@@ -1,12 +1,13 @@
-use image::imageops::{resize, FilterType};
+use image::{
+    imageops::{resize, FilterType},
+    DynamicImage,
+};
 
 pub fn begin_scale(
-    watermark_path: &str,
+    watermark_img: &DynamicImage,
     width: u32,
     height: u32,
 ) -> image::ImageBuffer<image::Rgba<u8>, Vec<u8>> {
-    let img = image::open(watermark_path).expect("watermark image not found");
-
-    let scaled_img = resize(&img, width, height, FilterType::Lanczos3);
+    let scaled_img = resize(watermark_img, width, height, FilterType::Lanczos3);
     scaled_img
 }
