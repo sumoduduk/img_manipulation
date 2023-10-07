@@ -1,3 +1,4 @@
+mod convert;
 mod file_operation;
 mod img_watermark;
 mod overlay;
@@ -8,7 +9,9 @@ use std::{env, path::Path};
 
 use file_operation::read_folder;
 
-use crate::{img_watermark::begin_watermarking, thumbnailing::create_thumbnail};
+use crate::{
+    convert::webp_convert, img_watermark::begin_watermarking, thumbnailing::create_thumbnail,
+};
 
 fn main() {
     let args: Vec<String> = env::args().collect();
@@ -26,6 +29,7 @@ fn main() {
     match process_picked.to_lowercase().trim() {
         "watermark" => begin_watermarking(folder_path, images),
         "thumbnail" => create_thumbnail(folder_path, images),
+        "webp" => webp_convert(),
         _ => {
             println!("please type watermark or thumbail only");
         }

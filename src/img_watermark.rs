@@ -14,10 +14,10 @@ pub fn begin_watermarking(folder_path: &Path, images: Vec<PathBuf>) {
 
     for img_path in images {
         create_folder(&watermark_folder);
-        let image_main = image::open(&img_path).expect("watermark: failed open image");
-        let mut img_scaled = begin_scale(&image_main, 512, 512, imageops::FilterType::CatmullRom);
+        let mut image_main = image::open(&img_path).expect("watermark: failed open image");
+        // let mut img_scaled = begin_scale(&image_main, 512, 512, imageops::FilterType::CatmullRom);
 
-        let _ = imageops::overlay(&mut img_scaled, &watermark_scale, 0, 0);
+        let _ = imageops::overlay(&mut image_main, &watermark_scale, 0, 0);
 
         let file_name = get_filename(&img_path);
 
@@ -27,7 +27,7 @@ pub fn begin_watermarking(folder_path: &Path, images: Vec<PathBuf>) {
 
                 println!("file output : {:?}", &file_output);
 
-                let _ = img_scaled.save(file_output);
+                let _ = image_main.save(file_output);
             }
             None => {
                 println!("failed to get filename");
