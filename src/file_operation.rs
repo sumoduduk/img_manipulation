@@ -34,6 +34,11 @@ pub fn get_filename(path: &Path) -> Option<&str> {
     file_name
 }
 
+pub fn get_stemame(path: &PathBuf) -> Option<&str> {
+    let stem_name = path.file_stem()?.to_str();
+    stem_name
+}
+
 pub fn create_folder(path: &Path) {
     if !path.exists() {
         create_dir_all(path).expect("Failed to create output folder")

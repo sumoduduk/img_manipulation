@@ -1,9 +1,32 @@
-pub fn webp_convert() {
-    let img_main = image::open("bride.png").expect("webp_convert: cant open image webp");
+use std::path::{Path, PathBuf};
 
-    let _ = img_main
-        .save("bride.webp")
-        .expect("webp_convert: cant save image");
+use crate::file_operation::{create_folder, get_stemame};
 
-    println!("Done converting");
+pub fn webp_convert(folder_path: &Path, images: Vec<PathBuf>) {
+    let webp_folder = folder_path.join("webp");
+
+    for img_path in images {
+        create_folder(&webp_folder);
+
+        let img_main = image::open(&img_path).expect("webp_convert: cant open image");
+
+        let file_name = get_stemame(&img_path);
+
+        match file_name {
+            Some(name_raw) => {
+                let webp_name = format!("{name_raw}.webp");
+                let file_out = webp_folder.join(&webp_name);
+
+                let result = img_main.save_with_format(&file_out, image::ImageFormat::WebP);
+
+                match result {
+                    Ok(_) => println!("result image path : {:?}", &file_out),
+                    Err(err) => println!("image error : {:?}", err),
+                }
+            }
+            None => {
+                println!("failed to get stemname");
+            }
+        }
+    }
 }

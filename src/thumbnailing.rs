@@ -12,7 +12,7 @@ pub fn create_thumbnail(folder_path: &Path, images: Vec<PathBuf>) {
         create_folder(&thumbnail_folder);
 
         let img_main = image::open(&img_path).expect("thumb: failed open image");
-        let image_scaled = begin_scale(&img_main, 256, 256, image::imageops::FilterType::Triangle);
+        let image_scaled = begin_scale(&img_main, 256, 256, image::imageops::FilterType::Nearest);
 
         let file_name = get_filename(&img_path);
 

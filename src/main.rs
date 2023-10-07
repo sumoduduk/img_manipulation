@@ -16,10 +16,15 @@ use crate::{
 fn main() {
     let args: Vec<String> = env::args().collect();
 
-    let folder_path = &args[1];
+    let folder_path = args
+        .get(1)
+        .expect("Please provide folder path as first argument");
+
     println!("folder path : {}", folder_path);
 
-    let process_picked = &args[2];
+    let process_picked = args
+        .get(2)
+        .expect("Please provide process name as second argument");
 
     println!("process picked : {}", process_picked);
 
@@ -29,7 +34,7 @@ fn main() {
     match process_picked.to_lowercase().trim() {
         "watermark" => begin_watermarking(folder_path, images),
         "thumbnail" => create_thumbnail(folder_path, images),
-        "webp" => webp_convert(),
+        "webp" => webp_convert(folder_path, images),
         _ => {
             println!("please type watermark or thumbail only");
         }
