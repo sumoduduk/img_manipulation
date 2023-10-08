@@ -6,9 +6,9 @@ use crate::{
 };
 use image::imageops;
 
-pub fn begin_watermarking(folder_path: &Path, images: Vec<PathBuf>) {
+pub fn begin_watermarking(folder_path: &Path, images: Vec<PathBuf>, watermark_path: &Path) {
     let watermark_folder = folder_path.join("watermark");
-    let watermark_img = image::open("bridal_watermark.png").expect("watermark image not found");
+    let watermark_img = image::open(watermark_path).expect("watermark image not found");
 
     let watermark_scale = begin_scale(&watermark_img, 512, 512, imageops::FilterType::Lanczos3);
 

@@ -9,6 +9,5 @@ pub fn begin_scale(
     height: u32,
     filter: FilterType,
 ) -> image::ImageBuffer<image::Rgba<u8>, Vec<u8>> {
-    let scaled_img = resize(watermark_img, width, height, filter);
-    scaled_img
+    resize(watermark_img, width, height, filter)
 }

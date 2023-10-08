@@ -32,7 +32,14 @@ fn main() {
     let images = read_folder(&folder_path).expect("No image file in folder");
 
     match process_picked.to_lowercase().trim() {
-        "watermark" => begin_watermarking(folder_path, images),
+        "watermark" => {
+            let watermark_arg = args
+                .get(3)
+                .expect("watermark: you must specify image watermark in 3rd args");
+
+            let watermark_path = Path::new(&watermark_arg);
+            begin_watermarking(folder_path, images, watermark_path);
+        }
         "thumbnail" => create_thumbnail(folder_path, images),
         "webp" => webp_convert(folder_path, images),
         _ => {

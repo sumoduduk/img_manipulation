@@ -21,7 +21,7 @@ pub fn read_folder(path: &Path) -> Option<Vec<PathBuf>> {
         }
     }
 
-    if arr_path.len() > 0 {
+    if !arr_path.is_empty() {
         Some(arr_path)
     } else {
         None
