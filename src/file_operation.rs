@@ -4,7 +4,7 @@ use std::{
 };
 
 pub fn read_folder(path: &Path) -> Option<Vec<PathBuf>> {
-    let file_names = fs::read_dir(path).expect("error: can't open folder");
+    let file_names = fs::read_dir(path).expect("ERROR: can't open folder");
 
     let mut arr_path = Vec::new();
     for file_name in file_names {
@@ -42,5 +42,26 @@ pub fn get_stemame(path: &PathBuf) -> Option<&str> {
 pub fn create_folder(path: &Path) {
     if !path.exists() {
         create_dir_all(path).expect("Failed to create output folder")
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+    use std::time::Instant;
+
+    #[test]
+    fn test_file_operation_should_exists() {
+        let start = Instant::now();
+        let folder_path = Path::new("./test_img");
+
+        let files = read_folder(&folder_path).unwrap();
+
+        assert!(!files.is_empty());
+
+        dbg!(files);
+
+        let duration = start.elapsed();
+        println!("Time duration : {:#?}", duration);
     }
 }
