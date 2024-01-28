@@ -14,16 +14,18 @@ use crate::{
 };
 
 fn main() {
-    let args: Vec<String> = env::args().collect();
+    let args = env::args();
+
+    args.next().unwrap();
 
     let folder_path = args
-        .get(1)
+        .next()
         .expect("Please provide folder path as first argument");
 
     println!("folder path : {}", folder_path);
 
     let process_picked = args
-        .get(2)
+        .next()
         .expect("Please provide process name as second argument");
 
     println!("process picked : {}", process_picked);
@@ -34,8 +36,8 @@ fn main() {
     match process_picked.to_lowercase().trim() {
         "watermark" => {
             let watermark_arg = args
-                .get(3)
-                .expect("watermark: you must specify image watermark in 3rd args");
+                .next()
+                .expect("watermark: you must specify image watermark path in 3rd args");
 
             let watermark_path = Path::new(&watermark_arg);
             begin_watermarking(folder_path, images, watermark_path);
