@@ -1,7 +1,6 @@
 mod convert;
 mod file_operation;
 mod img_watermark;
-mod overlay;
 mod scale_image;
 mod thumbnailing;
 
@@ -14,7 +13,7 @@ use crate::{
 };
 
 fn main() {
-    let args = env::args();
+    let mut args = env::args();
 
     args.next().unwrap();
 
@@ -40,7 +39,7 @@ fn main() {
                 .expect("watermark: you must specify image watermark path in 3rd args");
 
             let watermark_path = Path::new(&watermark_arg);
-            begin_watermarking(folder_path, images, watermark_path);
+            begin_watermarking(folder_path, &images, watermark_path);
         }
         "thumbnail" => create_thumbnail(folder_path, images),
         "webp" => webp_convert(folder_path, images),
