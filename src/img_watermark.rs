@@ -41,7 +41,8 @@ pub fn begin_watermarking(folder_path: &Path, images: &[PathBuf], watermark_path
 
         let duration_cache = start_cache.elapsed();
         println!(
-            "CACHING: Time duration when caching image : {:#?}",
+            "CACHING: Time on dimension {} duration when caching image : {:#?}",
+            w * h,
             duration_cache
         );
         // let mut img_scaled = begin_scale(&image_main, 512, 512, imageops::FilterType::CatmullRom);
