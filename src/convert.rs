@@ -1,3 +1,4 @@
+use rayon::iter::{IntoParallelRefIterator, ParallelIterator};
 use std::path::{Path, PathBuf};
 
 use crate::file_operation::{create_folder, get_stemame};
@@ -5,7 +6,7 @@ use crate::file_operation::{create_folder, get_stemame};
 pub fn webp_convert(folder_path: &Path, images: Vec<PathBuf>) {
     let webp_folder = folder_path.join("webp");
 
-    for img_path in images {
+    images.par_iter().for_each(|img_path| {
         create_folder(&webp_folder);
 
         let img_main = image::open(&img_path).expect("webp_convert: cant open image");
@@ -28,5 +29,5 @@ pub fn webp_convert(folder_path: &Path, images: Vec<PathBuf>) {
                 println!("failed to get stemname");
             }
         }
-    }
+    });
 }
