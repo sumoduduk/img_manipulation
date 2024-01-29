@@ -14,10 +14,8 @@ pub fn process_cache(
     watermark_img: &DynamicImage,
 ) -> Arc<BufferImage> {
     let total = width * height;
-    println!("INFO : dimension key {total}");
 
     if let Some(scaled_watermark) = cache_state.read().unwrap().get(&total) {
-        println!("INNER HIT : dimension key {total}");
         return Arc::clone(scaled_watermark);
     }
 

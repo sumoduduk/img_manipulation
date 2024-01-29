@@ -2,7 +2,6 @@ mod caching;
 
 use std::path::{Path, PathBuf};
 use std::sync::{Arc, RwLock};
-use std::time::Instant;
 
 use crate::file_operation::{create_folder, get_filename};
 use image::{imageops, GenericImageView, ImageBuffer};
@@ -25,35 +24,14 @@ pub fn begin_watermarking(folder_path: &Path, images: &[PathBuf], watermark_path
         create_folder(&watermark_folder);
         let cache_state = Arc::clone(&cache_state);
 
-        let start_main = Instant::now();
         let mut image_main = image::open(img_path).expect("watermark: failed open image");
-        let duration_main = start_main.elapsed();
-        println!(
-            "MAIN: Time duration when opening main image : {:#?}",
-            duration_main
-        );
 
         let (w, h) = image_main.dimensions();
 
-        let start_cache = Instant::now();
         let watermark_scale = process_cache(cache_state, w, h, &watermark_img);
         let water_ref = watermark_scale.as_ref();
 
-        let duration_cache = start_cache.elapsed();
-        println!(
-            "CACHING: Time on dimension {} duration when caching image : {:#?}",
-            w * h,
-            duration_cache
-        );
-        // let mut img_scaled = begin_scale(&image_main, 512, 512, imageops::FilterType::CatmullRom);
-
-        let start_watermark = Instant::now();
         let _ = imageops::overlay(&mut image_main, water_ref, 0, 0);
-        let duration_watermark = start_watermark.elapsed();
-        println!(
-            "WATERMARKING: Time duration when watermarking image : {:#?}",
-            duration_watermark
-        );
 
         let file_name = get_filename(img_path);
 
@@ -61,16 +39,10 @@ pub fn begin_watermarking(folder_path: &Path, images: &[PathBuf], watermark_path
             Some(name) => {
                 let file_output = watermark_folder.join(name);
 
-                // println!("file output : {:?}", &file_output);
-                let start_saving = Instant::now();
+                println!("file output : {:?}", &file_output);
                 let _ = image_main.save(file_output);
-                let duration_saving = start_saving.elapsed();
-                println!(
-                    "SAVING: Time duration when saving image : {:#?}",
-                    duration_saving
-                );
 
-                // println!("file saved success");
+                println!("file saved success");
             }
             None => {
                 println!("failed to get filename");
@@ -84,6 +56,7 @@ mod test {
 
     use super::*;
     use std::path::Path;
+    use std::time::Instant;
 
     use crate::file_operation::read_folder;
 
