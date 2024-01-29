@@ -1,29 +1,32 @@
 mod caching;
 
 use std::path::{Path, PathBuf};
-use std::rc::Rc;
+use std::sync::{Arc, RwLock};
 use std::time::Instant;
 
 use crate::file_operation::{create_folder, get_filename};
 use image::{imageops, GenericImageView, ImageBuffer};
 
+use caching::process_cache;
+use rayon::prelude::*;
 use std::collections::HashMap;
 
-use caching::process_cache;
-
 type BufferImage = ImageBuffer<image::Rgba<u8>, Vec<u8>>;
+type CacheTable = HashMap<u32, Arc<BufferImage>>;
 
 pub fn begin_watermarking(folder_path: &Path, images: &[PathBuf], watermark_path: &Path) {
     let watermark_folder = folder_path.join("watermark");
     let watermark_img = image::open(watermark_path).expect("ERROR: watermark image not found");
 
-    let mut cache_state: HashMap<u32, Rc<BufferImage>> = HashMap::with_capacity(images.len());
+    let cache_state: Arc<RwLock<CacheTable>> =
+        Arc::new(RwLock::new(HashMap::with_capacity(images.len())));
 
-    for img_path in images {
+    images.par_iter().for_each(move |img_path| {
         create_folder(&watermark_folder);
+        let cache_state = Arc::clone(&cache_state);
 
         let start_main = Instant::now();
-        let mut image_main = image::open(&img_path).expect("watermark: failed open image");
+        let mut image_main = image::open(img_path).expect("watermark: failed open image");
         let duration_main = start_main.elapsed();
         println!(
             "MAIN: Time duration when opening main image : {:#?}",
@@ -33,7 +36,7 @@ pub fn begin_watermarking(folder_path: &Path, images: &[PathBuf], watermark_path
         let (w, h) = image_main.dimensions();
 
         let start_cache = Instant::now();
-        let watermark_scale = process_cache(&mut cache_state, w, h, &watermark_img);
+        let watermark_scale = process_cache(cache_state, w, h, &watermark_img);
         let water_ref = watermark_scale.as_ref();
 
         let duration_cache = start_cache.elapsed();
@@ -51,7 +54,7 @@ pub fn begin_watermarking(folder_path: &Path, images: &[PathBuf], watermark_path
             duration_watermark
         );
 
-        let file_name = get_filename(&img_path);
+        let file_name = get_filename(img_path);
 
         match file_name {
             Some(name) => {
@@ -72,7 +75,7 @@ pub fn begin_watermarking(folder_path: &Path, images: &[PathBuf], watermark_path
                 println!("failed to get filename");
             }
         }
-    }
+    });
 }
 
 #[cfg(test)]
