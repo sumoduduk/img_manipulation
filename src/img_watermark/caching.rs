@@ -15,20 +15,17 @@ pub fn process_cache(
 ) -> Arc<BufferImage> {
     let total = width * height;
     println!("INFO : dimension key {total}");
+
     if let Some(scaled_watermark) = cache_state.read().unwrap().get(&total) {
-        Arc::clone(scaled_watermark)
-    } else {
-        let watermark_scale = begin_scale(
-            &watermark_img,
-            width,
-            height,
-            imageops::FilterType::Lanczos3,
-        );
-        let rc_watermark = Arc::new(watermark_scale);
-
-        let mut hash_map = cache_state.write().unwrap();
-        hash_map.insert(total, Arc::clone(&rc_watermark));
-
-        rc_watermark
+        println!("INNER HIT : dimension key {total}");
+        return Arc::clone(scaled_watermark);
     }
+
+    let watermark_scale = begin_scale(&watermark_img, width, height, imageops::FilterType::Nearest);
+    let rc_watermark = Arc::new(watermark_scale);
+
+    let mut hash_map = cache_state.write().unwrap();
+    hash_map.insert(total, Arc::clone(&rc_watermark));
+
+    rc_watermark
 }
