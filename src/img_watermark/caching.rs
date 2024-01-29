@@ -1,21 +1,22 @@
-use std::{collections::HashMap, rc::Rc};
+use std::sync::{Arc, RwLock};
 
 use image::{imageops, DynamicImage};
 
 use crate::scale_image::begin_scale;
 
 use super::BufferImage;
+use super::CacheTable;
 
 pub fn process_cache(
-    cache_state: &mut HashMap<u32, Rc<BufferImage>>,
+    cache_state: Arc<RwLock<CacheTable>>,
     width: u32,
     height: u32,
     watermark_img: &DynamicImage,
-) -> Rc<BufferImage> {
+) -> Arc<BufferImage> {
     let total = width * height;
     println!("INFO : dimension key {total}");
-    if let Some(scaled_watermark) = cache_state.get(&total) {
-        Rc::clone(scaled_watermark)
+    if let Some(scaled_watermark) = cache_state.read().unwrap().get(&total) {
+        Arc::clone(scaled_watermark)
     } else {
         let watermark_scale = begin_scale(
             &watermark_img,
@@ -23,8 +24,11 @@ pub fn process_cache(
             height,
             imageops::FilterType::Lanczos3,
         );
-        let rc_watermark = Rc::new(watermark_scale);
-        cache_state.insert(total, Rc::clone(&rc_watermark));
-        Rc::clone(&rc_watermark)
+        let rc_watermark = Arc::new(watermark_scale);
+
+        let mut hash_map = cache_state.write().unwrap();
+        hash_map.insert(total, Arc::clone(&rc_watermark));
+
+        rc_watermark
     }
 }
