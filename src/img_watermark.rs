@@ -1,25 +1,55 @@
-use std::path::{Path, PathBuf};
+mod caching;
 
-use crate::{
-    file_operation::{create_folder, get_filename},
-    scale_image::begin_scale,
-};
-use image::{imageops, GenericImageView};
+use std::path::{Path, PathBuf};
+use std::rc::Rc;
+use std::time::Instant;
+
+use crate::file_operation::{create_folder, get_filename};
+use image::{imageops, GenericImageView, ImageBuffer};
+
+use std::collections::HashMap;
+
+use caching::process_cache;
+
+type BufferImage = ImageBuffer<image::Rgba<u8>, Vec<u8>>;
 
 pub fn begin_watermarking(folder_path: &Path, images: &[PathBuf], watermark_path: &Path) {
     let watermark_folder = folder_path.join("watermark");
     let watermark_img = image::open(watermark_path).expect("ERROR: watermark image not found");
 
+    let mut cache_state: HashMap<u32, Rc<BufferImage>> = HashMap::with_capacity(images.len());
+
     for img_path in images {
         create_folder(&watermark_folder);
+
+        let start_main = Instant::now();
         let mut image_main = image::open(&img_path).expect("watermark: failed open image");
+        let duration_main = start_main.elapsed();
+        println!(
+            "MAIN: Time duration when opening main image : {:#?}",
+            duration_main
+        );
+
         let (w, h) = image_main.dimensions();
 
-        let watermark_scale = begin_scale(&watermark_img, w, h, imageops::FilterType::Lanczos3);
+        let start_cache = Instant::now();
+        let watermark_scale = process_cache(&mut cache_state, w, h, &watermark_img);
+        let water_ref = watermark_scale.as_ref();
 
+        let duration_cache = start_cache.elapsed();
+        println!(
+            "CACHING: Time duration when caching image : {:#?}",
+            duration_cache
+        );
         // let mut img_scaled = begin_scale(&image_main, 512, 512, imageops::FilterType::CatmullRom);
 
-        let _ = imageops::overlay(&mut image_main, &watermark_scale, 0, 0);
+        let start_watermark = Instant::now();
+        let _ = imageops::overlay(&mut image_main, water_ref, 0, 0);
+        let duration_watermark = start_watermark.elapsed();
+        println!(
+            "WATERMARKING: Time duration when watermarking image : {:#?}",
+            duration_watermark
+        );
 
         let file_name = get_filename(&img_path);
 
@@ -27,10 +57,16 @@ pub fn begin_watermarking(folder_path: &Path, images: &[PathBuf], watermark_path
             Some(name) => {
                 let file_output = watermark_folder.join(name);
 
-                println!("file output : {:?}", &file_output);
+                // println!("file output : {:?}", &file_output);
+                let start_saving = Instant::now();
                 let _ = image_main.save(file_output);
+                let duration_saving = start_saving.elapsed();
+                println!(
+                    "SAVING: Time duration when saving image : {:#?}",
+                    duration_saving
+                );
 
-                println!("file saved success");
+                // println!("file saved success");
             }
             None => {
                 println!("failed to get filename");
@@ -44,7 +80,6 @@ mod test {
 
     use super::*;
     use std::path::Path;
-    use std::time::Instant;
 
     use crate::file_operation::read_folder;
 
@@ -57,6 +92,6 @@ mod test {
         begin_watermarking(folder_path, &images, watermark_path);
         let duration = start.elapsed();
 
-        println!("Time duration : {:#?}", duration);
+        println!("TEST: Time duration : {:#?}", duration);
     }
 }
