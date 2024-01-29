@@ -1,5 +1,7 @@
 use std::path::{Path, PathBuf};
 
+use rayon::iter::{IntoParallelRefIterator, ParallelIterator};
+
 use crate::{
     file_operation::{create_folder, get_filename},
     scale_image::begin_scale,
@@ -8,7 +10,7 @@ use crate::{
 pub fn create_thumbnail(folder_path: &Path, images: Vec<PathBuf>) {
     let thumbnail_folder = folder_path.join("thumbnail");
 
-    for img_path in images {
+    images.par_iter().for_each(|img_path| {
         create_folder(&thumbnail_folder);
 
         let img_main = image::open(&img_path).expect("thumb: failed open image");
@@ -28,5 +30,5 @@ pub fn create_thumbnail(folder_path: &Path, images: Vec<PathBuf>) {
                 println!("failed to get filename");
             }
         }
-    }
+    });
 }
